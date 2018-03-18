@@ -7,7 +7,7 @@ Task3:
 ## Setting up
 
 The ./src/ folder consists of source code files
-```
+``` 
 1. *.java - ***
 
 ```
