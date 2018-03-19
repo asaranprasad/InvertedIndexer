@@ -67,44 +67,25 @@ public class CorpusGenerator {
    */
   private String getDocText(Document page, boolean doesCaseFolding,
       boolean handlesPunctuations) {
-    List<String[]> urlTxtPairs = new ArrayList<String[]>();
-    HashSet<String> currentSet = new HashSet<String>();
-
-    // sets the domain name as the BaseUri
-    page.setBaseUri(config.getBaseUri());
-
     // Pre-Processing - Exclude non-content portion of the page
-    for (String exclusionSelector : config.getCrawlExclusionSelectors())
+    for (String exclusionSelector : config.getExclusionSelectors())
       page.select(exclusionSelector).remove();
-    Elements hyperLinks = page.select(config.getMainContentSelector());
 
-    // Exclude administrative and previously visited URLs
-    Iterator<Element> iter = hyperLinks.iterator();
-    while (iter.hasNext()) {
-      Element anchor = (Element) iter.next();
-      String href = anchor.absUrl("href");
-      String plainHref = anchor.attr("href");
+    String docText = page.body().text();
 
-      // remove administrative URLs and other irrelevant redirections
-      boolean removeCondition = !href.contains(config.getBaseUri());
-      removeCondition = removeCondition || !plainHref.startsWith(config.getArticleType());
-      removeCondition = removeCondition || href.contains("#");
-      removeCondition = removeCondition || plainHref.contains(":");
+    if (doesCaseFolding)
+      docText = docText.toLowerCase();
 
-      // exclude pages already visited
-      if (removeCondition)
-        iter.remove();
-
-      // form a URL-Text pair
-      else if (!currentSet.contains(href)) {
-        String[] urlTxtPair = new String[2];
-        urlTxtPair[0] = href;
-        urlTxtPair[1] = anchor.text().trim();
-        urlTxtPairs.add(urlTxtPair);
-        currentSet.add(href);
-      }
+    // remove punctuation from text but preserve hyphens 
+    // also retain punctuation within digits (, or .)
+    if (handlesPunctuations) {
+      // removes punctuations except - , and .
+      docText = docText.replaceAll("[^a-zA-Z0-9-,. ]+", "");
+      // punctuated decimal number and hyphenated characters regex
+      // regex [[0-9]*(,|\.)([0-9]+)|[a-z]*-([a-z]+)]*
     }
-    return urlTxtPairs;
+
+    return docText;
   }
 
   private String getArticleTitle(String url) {
