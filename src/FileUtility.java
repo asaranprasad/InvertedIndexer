@@ -30,7 +30,7 @@ public class FileUtility {
       nextLine = sc.nextLine();
     url = sc.nextLine();
     // skip the Trec Headers
-    while (sc.hasNextLine() && !nextLine.equals("</DOCHDR>"))
+    while (sc.hasNextLine() && !nextLine.startsWith("<html"))
       nextLine = sc.nextLine();
     // read doc contents
     while (sc.hasNextLine() && !nextLine.equals("</DOC>")) {
@@ -69,7 +69,7 @@ public class FileUtility {
   public void writeStringToFile(String outputString, String outputPath) {
     try {
       PrintWriter outputHandle = new PrintWriter(outputPath);
-      outputHandle.print(outputString);
+      outputHandle.println(outputString);
       outputHandle.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();

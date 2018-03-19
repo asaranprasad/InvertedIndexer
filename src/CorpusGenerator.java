@@ -1,21 +1,12 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Scanner;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class CorpusGenerator {
   private IndexerConfig config;
   private FileUtility fUtility;
-  private PrintWriter output;
-  private PrintWriter docsDownload;
 
   /* Constructor assuming default indexer config */
   public CorpusGenerator() {
@@ -43,12 +34,9 @@ public class CorpusGenerator {
         Document page = Jsoup.parse(urlDocStringPair[1]);
         String docText = getDocText(page, doesCaseFolding, handlesPunctuations);
 
-        // appending url to the doc text
-        docText = urlDocStringPair[0] + docText;
-
         // save parsed document to output
         String outputFileName = outputFolderPath + articleTitle + ".txt";
-        fUtility.writeStringToFile(docText, outputFileName);
+        fUtility.writeStringToFile(urlDocStringPair[0] + " " + docText, outputFileName);
       }
       sc.close();
     } catch (FileNotFoundException e) {
@@ -73,6 +61,7 @@ public class CorpusGenerator {
 
     String docText = page.body().text();
 
+    // case folding
     if (doesCaseFolding)
       docText = docText.toLowerCase();
 
@@ -80,10 +69,18 @@ public class CorpusGenerator {
     // also retain punctuation within digits (, or .)
     if (handlesPunctuations) {
       // removes punctuations except - , and .
-      docText = docText.replaceAll("[^a-zA-Z0-9-,. ]+", "");
-      // punctuated decimal number and hyphenated characters regex
-      // regex [[0-9]*(,|\.)([0-9]+)|[a-z]*-([a-z]+)]*
+      docText = docText.replaceAll("[^a-zA-Z0-9-\\., ]", " ");
+
+      // Retaining punctuation within digits (, or .) 
+      // as well as hyphens using Negative look ahead
+      docText =
+          docText.replaceAll(
+              "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[a-zA-Z]*-[a-zA-Z0-9]+)([^a-zA-Z0-9- ]+)",
+              " ");
     }
+
+    // replace multispaces with a single space
+    docText = docText.replaceAll("[ ]+", " ");
 
     return docText;
   }
