@@ -26,7 +26,8 @@ public class CorpusGenerator {
 
     try {
       Scanner sc = new Scanner(new File(inputDocsPath));
-      for (int i = 0; i < config.getDocsCount(); i++) {
+      int i = 0;
+      for (; i < config.getDocsCount(); i++) {
         urlDocStringPair = fUtility.getNextDocText(sc);
         String articleTitle = getArticleTitle(urlDocStringPair[0]);
 
@@ -36,12 +37,21 @@ public class CorpusGenerator {
 
         // save parsed document to output
         String outputFileName = outputFolderPath + articleTitle + ".txt";
+        if (fileExists(outputFileName)) {
+          System.out
+              .println("File Already Exists, overwriting it: " + articleTitle + ".txt");
+        }
         fUtility.writeStringToFile(urlDocStringPair[0] + " " + docText, outputFileName);
       }
       sc.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
+  }
+
+  private boolean fileExists(String outputFileName) {
+    File f = new File(outputFileName);
+    return f.exists() && !f.isDirectory();
   }
 
   /**
@@ -75,7 +85,7 @@ public class CorpusGenerator {
       // as well as hyphens using Negative look ahead
       docText =
           docText.replaceAll(
-              "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[a-zA-Z]*-[a-zA-Z0-9]+)([^a-zA-Z0-9- ]+)",
+              "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[a-zA-Z0-9]*-[a-zA-Z0-9]+)([^a-zA-Z0-9- ]+)",
               " ");
     }
 

@@ -15,6 +15,7 @@ public class IndexerConfig {
     setExclusionSelectors(getExclusionList());
   }
 
+  /* List of exclusion elements to be ignored by the parser */
   private List<String> getExclusionList() {
     List<String> exclusionCSSList = new ArrayList<String>();
     exclusionCSSList.add("[role=navigation]");
