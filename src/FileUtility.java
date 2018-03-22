@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -19,27 +20,53 @@ public class FileUtility {
     return lines;
   }
 
+
+  public String textFileToString(String filePath) {
+    return textFileToString(new File(filePath));
+  }
+
+
+  public String textFileToString(File file) {
+    StringBuilder lines = new StringBuilder();
+    try {
+      Scanner sc = new Scanner(file);
+      while (sc.hasNextLine())
+        lines.append(sc.nextLine());
+      sc.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return lines.toString();
+  }
+
   public String[] getNextDocText(Scanner sc) {
     String[] titleDocStringPair = new String[2];
-    String url = new String();
-    StringBuilder lines = new StringBuilder();
+    try {
+      String url = new String();
+      StringBuilder lines = new StringBuilder();
 
-    String nextLine = sc.nextLine();
-    // get article id
-    while (sc.hasNextLine() && !nextLine.equals("<DOCHDR>"))
-      nextLine = sc.nextLine();
-    url = sc.nextLine();
-    // skip the Trec Headers
-    while (sc.hasNextLine() && !nextLine.startsWith("<html"))
-      nextLine = sc.nextLine();
-    // read doc contents
-    while (sc.hasNextLine() && !nextLine.equals("</DOC>")) {
-      lines.append(nextLine);
-      nextLine = sc.nextLine();
+      String nextLine = sc.nextLine();
+      // get article id from url
+      while (sc.hasNextLine() && !nextLine.equals("<DOCHDR>"))
+        nextLine = sc.nextLine();
+      // url-decoding using UTF-8
+      url = java.net.URLDecoder.decode(sc.nextLine(), "UTF-8");
+
+      // skip the Trec Headers
+      while (sc.hasNextLine() && !nextLine.startsWith("<html"))
+        nextLine = sc.nextLine();
+      // read doc contents
+      while (sc.hasNextLine() && !nextLine.equals("</DOC>")) {
+        lines.append(nextLine);
+        nextLine = sc.nextLine();
+      }
+
+      titleDocStringPair[0] = url;
+      titleDocStringPair[1] = lines.toString();
+    } catch (UnsupportedEncodingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
-
-    titleDocStringPair[0] = url;
-    titleDocStringPair[1] = lines.toString();
     return titleDocStringPair;
   }
 
