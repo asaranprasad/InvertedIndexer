@@ -20,7 +20,7 @@ public class FileUtility {
   }
 
   public String[] getNextDocText(Scanner sc) {
-    String[] urlDocStringPair = new String[2];
+    String[] titleDocStringPair = new String[2];
     String url = new String();
     StringBuilder lines = new StringBuilder();
 
@@ -38,9 +38,9 @@ public class FileUtility {
       nextLine = sc.nextLine();
     }
 
-    urlDocStringPair[0] = url;
-    urlDocStringPair[1] = lines.toString();
-    return urlDocStringPair;
+    titleDocStringPair[0] = url;
+    titleDocStringPair[1] = lines.toString();
+    return titleDocStringPair;
   }
 
   /**

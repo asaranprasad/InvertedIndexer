@@ -8,31 +8,31 @@ public class CorpusGenerator {
   private IndexerConfig config;
   private FileUtility fUtility;
 
-  /* Constructor assuming default indexer config */
+  /* Constructor assuming default parser config */
   public CorpusGenerator() {
     this(new IndexerConfig());
   }
 
-  /* Constructor accepting custom config for the indexer */
+  /* Constructor accepting custom config for the parser */
   public CorpusGenerator(IndexerConfig config) {
     fUtility = new FileUtility();
     this.config = config;
   }
 
   public void generateCorpus(boolean doesCaseFolding, boolean handlesPunctuations) {
-    String outputFolderPath = config.getOutputFolderPath();
+    String outputFolderPath = config.getParserOutputPath();
     String inputDocsPath = config.getInputDocsPath();
-    String[] urlDocStringPair = new String[2];
+    String[] titleDocStringPair = new String[2];
 
     try {
       Scanner sc = new Scanner(new File(inputDocsPath));
       int i = 0;
       for (; i < config.getDocsCount(); i++) {
-        urlDocStringPair = fUtility.getNextDocText(sc);
-        String articleTitle = getArticleTitle(urlDocStringPair[0]);
+        titleDocStringPair = fUtility.getNextDocText(sc);
+        String articleTitle = getArticleTitle(titleDocStringPair[0]);
 
         // generate page object for this document
-        Document page = Jsoup.parse(urlDocStringPair[1]);
+        Document page = Jsoup.parse(titleDocStringPair[1]);
         String docText = getDocText(page, doesCaseFolding, handlesPunctuations);
 
         // save parsed document to output
@@ -41,7 +41,7 @@ public class CorpusGenerator {
           System.out
               .println("File Already Exists, overwriting it: " + articleTitle + ".txt");
         }
-        fUtility.writeStringToFile(urlDocStringPair[0] + " " + docText, outputFileName);
+        fUtility.writeStringToFile(docText, outputFileName);
       }
       sc.close();
     } catch (FileNotFoundException e) {
@@ -69,7 +69,8 @@ public class CorpusGenerator {
     for (String exclusionSelector : config.getExclusionSelectors())
       page.select(exclusionSelector).remove();
 
-    String docText = page.body().text();
+    // extracting title and body text
+    String docText = page.title() + " " + page.body().text();
 
     // case folding
     if (doesCaseFolding)

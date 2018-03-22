@@ -5,12 +5,25 @@ public class IndexerConfig {
 
   private String outputFolderPath;
   private String inputDocsPath;
+  private String parserOutputPath;
+  private String unigramOutputPath;
+  private String bigramOutputPath;
+  private String trigramOutputPath;
+  private String unigramWithTermPosOutputPath;
+  private String docStatPath;
+
   private int docsCount;
   private List<String> exclusionSelectors;
 
   IndexerConfig() {
-    outputFolderPath = "./output/";
     inputDocsPath = "./input/BFSCrawledDocuments.txt";
+    outputFolderPath = "./output/";
+    parserOutputPath = outputFolderPath + "parserOutput/";
+    unigramOutputPath = outputFolderPath + "unigramOutput/";
+    bigramOutputPath = outputFolderPath + "bigramOutput/";
+    trigramOutputPath = outputFolderPath + "trigramOutput/";
+    unigramWithTermPosOutputPath = outputFolderPath + "unigramWithTermPosOutput/";
+    docStatPath = outputFolderPath + "docStat/";
     docsCount = 1000;
     setExclusionSelectors(getExclusionList());
   }
@@ -25,6 +38,14 @@ public class IndexerConfig {
     exclusionCSSList.add(".image");
     exclusionCSSList.add(".mw-wiki-logo");
     return exclusionCSSList;
+  }
+
+  public String getParserOutputPath() {
+    return parserOutputPath;
+  }
+
+  public void setParserOutputPath(String parserOutputPath) {
+    this.parserOutputPath = parserOutputPath;
   }
 
   public void setOutputFolderPath(String outputFolderPath) {
@@ -49,6 +70,46 @@ public class IndexerConfig {
 
   public int getDocsCount() {
     return docsCount;
+  }
+
+  public String getUnigramOutputPath() {
+    return unigramOutputPath;
+  }
+
+  public void setUnigramOutputPath(String unigramOutputPath) {
+    this.unigramOutputPath = unigramOutputPath;
+  }
+
+  public String getBigramOutputPath() {
+    return bigramOutputPath;
+  }
+
+  public void setBigramOutputPath(String bigramOutputPath) {
+    this.bigramOutputPath = bigramOutputPath;
+  }
+
+  public String getTrigramOutputPath() {
+    return trigramOutputPath;
+  }
+
+  public void setTrigramOutputPath(String trigramOutputPath) {
+    this.trigramOutputPath = trigramOutputPath;
+  }
+
+  public String getUnigramWithTermPosOutputPath() {
+    return unigramWithTermPosOutputPath;
+  }
+
+  public void setUnigramWithTermPosOutputPath(String unigramWithTermPosOutputPath) {
+    this.unigramWithTermPosOutputPath = unigramWithTermPosOutputPath;
+  }
+
+  public String getDocStatPath() {
+    return docStatPath;
+  }
+
+  public void setDocStatPath(String docStatPath) {
+    this.docStatPath = docStatPath;
   }
 
   public List<String> getExclusionSelectors() {
