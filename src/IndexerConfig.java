@@ -229,4 +229,42 @@ public class IndexerConfig {
     this.exclusionSelectors = exclusionSelectors;
   }
 
+  public String getNGramIndexPath(int n, boolean storeTermPos) {
+    switch (n) {
+      case 1:
+        if (storeTermPos)
+          return getUnigramWithTermPosIndexPath();
+        return getUnigramIndexPath();
+      case 2:
+        return getBigramIndexPath();
+      case 3:
+        return getTrigramIndexPath();
+    }
+    return null;
+  }
+
+  public String getNGramTermFreqPath(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramTermFreqPath();
+      case 2:
+        return getBigramTermFreqPath();
+      case 3:
+        return getTrigramTermFreqPath();
+    }
+    return null;
+  }
+
+  public String getNGramDocFreqPath(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramDocFreqPath();
+      case 2:
+        return getBigramDocFreqPath();
+      case 3:
+        return getTrigramDocFreqPath();
+    }
+    return null;
+  }
+
 }

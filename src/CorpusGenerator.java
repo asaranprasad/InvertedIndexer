@@ -85,13 +85,14 @@ public class CorpusGenerator {
       // as well as hyphens using Negative look ahead
       docText =
           docText.replaceAll(
-              "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[\\p{L}0-9]*-[\\p{L}0-9]+)([^\\p{L}0-9- ]+)",
+              "(?![0-9]+,[0-9]+|[0-9]*\\.[0-9]+|[\\p{L}0-9]*-[\\p{L}0-9]+)([^\\p{L}0-9- ]+)",
               " ");
 
-      // remove stand-alone hyphens
+      // remove stand-alone hyphens. Various UTF-8 types
       docText = docText.replace(" - ", " ");
       docText = docText.replace(" – ", " ");
       docText = docText.replace(" − ", " ");
+      docText = docText.replace(" - ", " ");
     }
 
     // replace multispaces with a single space
