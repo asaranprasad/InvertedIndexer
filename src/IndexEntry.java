@@ -12,6 +12,12 @@ public class IndexEntry {
     tf = 0;
   }
 
+  public IndexEntry(String docID, List<Integer> termPos, int tf) {
+    this.docID = docID;
+    this.termPos = termPos;
+    this.tf = tf;
+  }
+
   public void appendPos(int pos) {
     termPos.add(pos);
     tf++;

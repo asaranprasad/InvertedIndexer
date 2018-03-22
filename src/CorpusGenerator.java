@@ -79,19 +79,19 @@ public class CorpusGenerator {
     // also retain punctuation within digits (, or .)
     if (handlesPunctuations) {
       // removes punctuations except - , and .
-      //      docText = docText.replaceAll("[^a-zA-Z0-9-\\., ]", " ");
       docText = docText.replaceAll("[^\\p{L}0-9-–−\\., ]", " ");
 
       // Retaining punctuation within digits (, or .) 
       // as well as hyphens using Negative look ahead
-      //      docText =
-      //          docText.replaceAll(
-      //              "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[a-zA-Z0-9]*-[a-zA-Z0-9]+)([^a-zA-Z0-9- ]+)",
-      //              " ");
       docText =
           docText.replaceAll(
               "(?![0-9]*,[0-9]+|[0-9]*\\.[0-9]+|[\\p{L}0-9]*-[\\p{L}0-9]+)([^\\p{L}0-9- ]+)",
               " ");
+
+      // remove stand-alone hyphens
+      docText = docText.replace(" - ", " ");
+      docText = docText.replace(" – ", " ");
+      docText = docText.replace(" − ", " ");
     }
 
     // replace multispaces with a single space

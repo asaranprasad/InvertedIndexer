@@ -1,15 +1,15 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
+import java.util.Scanner;
 
 public class InvertedIndexer {
   private HashMap<String, Integer> docLength;
-  private HashMap<String, TreeSet<IndexEntry>> invIndex;
+  private HashMap<String, HashMap<String, IndexEntry>> invIndex;
   IndexerConfig config;
   private FileUtility fUtility;
   private File parsedDocumentsDir;
@@ -22,23 +22,60 @@ public class InvertedIndexer {
   /* Constructor accepting custom config for the indexer */
   public InvertedIndexer(IndexerConfig config) {
     docLength = new HashMap<String, Integer>();
-    invIndex = new HashMap<String, TreeSet<IndexEntry>>();
+    invIndex = new HashMap<String, HashMap<String, IndexEntry>>();
     this.config = config;
     fUtility = new FileUtility();
     parsedDocumentsDir = new File(config.getParserOutputPath());
   }
 
+  public void loadInvertedIndexFromFile(String indexPath) {
+    //    List<String> entries = fUtility.textFileToList(indexPath);
+    try {
+      Scanner sc = new Scanner(new File(filePath));
+      while (sc.hasNextLine())
+        lines.add(sc.nextLine());
+      sc.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    for (String entry : entries) {
+      entry = entry.trim();
+      if (!entry.isEmpty()) {
+        String[] termValue = entry.trim().split(" -> ");
+        String[] docEntries = termValue[1].split(") (");
+        HashMap<String, IndexEntry> invEntryVal = new HashMap<String, IndexEntry>();
+        for (String docEntry : docEntries) {
+          docEntry = docEntry.replace("(", "").replace(")", "");
+          String[] components = docEntry.split(", ");
+          String docID = components[0];
+          int tf = Integer.parseInt(components[1]);
+
+          // if term positions information present
+          List<Integer> termPos = new LinkedList<Integer>();
+          if (components.length > 2) {
+            String[] pos = components[2].replace("[", "").replace(" ]", "").split(" ");
+            for (String eachPos : pos)
+              termPos.add(Integer.parseInt(eachPos));
+          }
+          IndexEntry ie = new IndexEntry(docID, termPos, tf);
+          invEntryVal.put(docID, ie);
+        }
+        invIndex.put(termValue[0], invEntryVal);
+      }
+    }
+  }
+
   /* Store the number of terms in each document in 
    * a separate data structure 
    */
-  public void generateDocStatistics() {
+  public void generateDocStatisticsFromCorpus() {
     try {
-      PrintWriter statOutput = new PrintWriter(config.getDocStatPath() + "stat.txt");
+      PrintWriter statOutput = new PrintWriter(config.getDocStatPath());
       File[] directoryListing = parsedDocumentsDir.listFiles();
       if (directoryListing != null)
         for (File doc : directoryListing) {
           String fileContent = fUtility.textFileToString(doc);
-          String fileName = doc.getName();
+          String fileName = trimFileExtn(doc.getName());
           int termCount = fileContent.split(" ").length;
           docLength.put(fileName, termCount);
           statOutput.println(fileName + " " + termCount);
@@ -49,12 +86,13 @@ public class InvertedIndexer {
     }
   }
 
-  public void generateNgramInvIndex(int n, boolean storeTermPos) {
+  public void generateNgramInvIndexFromCorpus(int n, boolean storeTermPos) {
     File[] directoryListing = parsedDocumentsDir.listFiles();
+    int fileCount = 0;
     if (directoryListing != null)
       for (File doc : directoryListing) {
         String[] words = fUtility.textFileToString(doc).split(" ");
-        String docID = doc.getName();
+        String docID = trimFileExtn(doc.getName());
         int windowingLimit = words.length - (n - 1);
         for (int i = 0; i < windowingLimit; i++) {
           String term = new String();
@@ -65,39 +103,38 @@ public class InvertedIndexer {
             term = term + " " + words[i + 2];
 
           if (!term.isEmpty()) {
-            TreeSet<IndexEntry> docSetSorted;
+            HashMap<String, IndexEntry> docSet;
             // if the term occurs for the first time in the inverted index
             if (!invIndex.containsKey(term)) {
-              docSetSorted = new TreeSet<IndexEntry>(new IndexEntryComp());
+              docSet = new HashMap<String, IndexEntry>();
               IndexEntry entry = new IndexEntry(docID);
               entry.appendPos(i);
-              docSetSorted.add(entry);
-              invIndex.put(term, docSetSorted);
+              docSet.put(docID, entry);
+              invIndex.put(term, docSet);
             } else {
-              docSetSorted = invIndex.get(term);
-              Iterator<IndexEntry> it = docSetSorted.iterator();
-              IndexEntry current = null;
-              while (it.hasNext()) {
-                current = it.next();
-                if (current.getDocID().equals(docID))
-                  break;
-              }
+              docSet = invIndex.get(term);
+              IndexEntry entry = docSet.get(docID);
               // if the inverted index contains the term and the docID entry
-              if (current != null)
-                current.appendPos(i);
+              if (entry != null)
+                entry.appendPos(i);
               // if the term occurs for the first time in the docID
               else {
-                IndexEntry entry = new IndexEntry(docID);
-                entry.appendPos(i);
-                docSetSorted.add(entry);
-//                invIndex.put(term, docSetSorted);
+                IndexEntry newEntry = new IndexEntry(docID);
+                newEntry.appendPos(i);
+                docSet.put(docID, newEntry);
               }
             }
           }
         }
+        System.out.println("done: " + (++fileCount) + " | " + docID);
       }
+    System.out.println("done: generating index for " + n + " gram");
     // print inverted index to file
     printNGramIndexToFile(n, storeTermPos);
+  }
+
+  private String trimFileExtn(String name) {
+    return name.substring(0, name.lastIndexOf('.'));
   }
 
   private void printNGramIndexToFile(int n, boolean storeTermPos) {
@@ -105,31 +142,32 @@ public class InvertedIndexer {
       String outputIndexPath = new String();
       switch (n) {
         case 1:
-          outputIndexPath = config.getUnigramOutputPath() + "unigramInvIndex.txt";
+          outputIndexPath = config.getUnigramIndexPath();
           if (storeTermPos)
             outputIndexPath =
-                config.getUnigramWithTermPosOutputPath() + "unigramInvIndexWithPos.txt";
+                config.getUnigramWithTermPosIndexPath();
           break;
         case 2:
-          outputIndexPath = config.getBigramOutputPath() + "bigramInvIndex.txt";
+          outputIndexPath = config.getBigramIndexPath();
           break;
         case 3:
-          outputIndexPath = config.getTrigramOutputPath() + "trigramInvIndex.txt";
+          outputIndexPath = config.getTrigramIndexPath();
           break;
       }
       PrintWriter ngramOutput = new PrintWriter(outputIndexPath);
       StringBuilder outLine;
-      for (Map.Entry<String, TreeSet<IndexEntry>> entry : invIndex.entrySet()) {
+      for (Map.Entry<String, HashMap<String, IndexEntry>> entry : invIndex.entrySet()) {
         outLine = new StringBuilder();
         String term = entry.getKey();
         outLine.append(term + " ->");
-        TreeSet<IndexEntry> docEntries = entry.getValue();
-        for (IndexEntry docEntry : docEntries) {
-          outLine.append(" (" + docEntry.getDocID());
-          outLine.append(", " + docEntry.getTf());
+        HashMap<String, IndexEntry> docEntries = entry.getValue();
+        for (Map.Entry<String, IndexEntry> docEntry : docEntries.entrySet()) {
+          IndexEntry docEntryVal = docEntry.getValue();
+          outLine.append(" (" + docEntryVal.getDocID());
+          outLine.append(", " + docEntryVal.getTf());
           if (storeTermPos) {
             outLine.append(", [");
-            for (int termPos : docEntry.getTermPos())
+            for (int termPos : docEntryVal.getTermPos())
               outLine.append(termPos + " ");
             outLine.append("]");
           }
@@ -141,13 +179,17 @@ public class InvertedIndexer {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
+    System.out.println("done: printing index for " + n + " gram");
   }
-}
 
 
-class IndexEntryComp implements Comparator<IndexEntry> {
-  @Override
-  public int compare(IndexEntry o1, IndexEntry o2) {
-    return o1.getDocID().compareTo(o2.getDocID());
+  public void generateNGramTermFreqTable(int i) {
+
   }
+
+  public void generateNGramDocFreqTable(int i) {
+
+  }
+
+
 }
