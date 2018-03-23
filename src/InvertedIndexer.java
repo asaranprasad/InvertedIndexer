@@ -12,14 +12,21 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class InvertedIndexer {
+  // maps each document in the corpus to its length
   private HashMap<String, Integer> docLength;
+  // inverted index
   private HashMap<String, HashMap<String, IndexEntry>> invIndex;
+  // maps each term to its frequency in the corpus
   private HashMap<String, Integer> termFreq;
+  // maps each term to the list of documents that contain the term
   private HashMap<String, List<String>> docFreq;
+  // list of stop words
   private List<String> stopList;
-  private int collectionLength;
+  // config file for the indexer application
   IndexerConfig config;
+  // handle to file io operations
   private FileUtility fUtility;
+  // handle to the input document directory for the indexer
   private File parsedDocumentsDir;
 
   /* Constructor assuming default indexer config */
@@ -34,12 +41,17 @@ public class InvertedIndexer {
     termFreq = new HashMap<String, Integer>();
     docFreq = new HashMap<String, List<String>>();
     stopList = new LinkedList<String>();
-    collectionLength = 0;
     this.config = config;
     fUtility = new FileUtility();
     parsedDocumentsDir = new File(config.getParserOutputPath());
   }
 
+  /**
+   * Parses flat file containing the inverted index and reads it into the indexer datastructure in
+   * memory
+   * 
+   * @param indexPath - path to the input flat file
+   */
   public void loadInvertedIndexFromFile(String indexPath) {
     try {
       invIndex = new HashMap<String, HashMap<String, IndexEntry>>();
@@ -77,6 +89,11 @@ public class InvertedIndexer {
     }
   }
 
+  /**
+   * Prints document vs document length table to file specified in the config
+   * 
+   * @param n - ngram
+   */
   public void printDocStatToFile(int n) {
     try {
       System.out.println("Start: Printing Doc Stat");
@@ -90,17 +107,21 @@ public class InvertedIndexer {
     System.out.println("Done: Printing Doc Stat");
   }
 
+  /**
+   * Creates inverted indexes
+   * 
+   * @param n - ngram
+   * @param storeTermPos - flag to enable storing term positions apart from term frequencies
+   */
   public void generateNgramInvIndexFromCorpus(int n, boolean storeTermPos) {
     invIndex = new HashMap<String, HashMap<String, IndexEntry>>();
     File[] directoryListing = parsedDocumentsDir.listFiles();
     int fileCount = 0;
-    collectionLength = 0;
     if (directoryListing != null)
       for (File doc : directoryListing) {
         String[] words = fUtility.textFileToString(doc).split(" ");
         String docID = trimFileExtn(doc.getName());
         int windowingLimit = words.length - (n - 1);
-        collectionLength += windowingLimit;
         // Task 2b - Store the number of terms in each document in a separate data structure
         docLength.put(docID, windowingLimit);
         for (int i = 0; i < windowingLimit; i++) {
@@ -144,10 +165,19 @@ public class InvertedIndexer {
     printDocStatToFile(n);
   }
 
+  /**
+   * Returns file name sans extension
+   */
   private String trimFileExtn(String name) {
     return name.substring(0, name.lastIndexOf('.'));
   }
 
+  /**
+   * Prints the inverted index to the file specified in the config
+   * 
+   * @param n - ngram
+   * @param storeTermPos - flag specifying term positions to be stored or not
+   */
   public void printNGramIndexToFile(int n, boolean storeTermPos) {
     try {
       String outputIndexPath = config.getNGramIndexPath(n, storeTermPos);
@@ -180,6 +210,11 @@ public class InvertedIndexer {
   }
 
 
+  /**
+   * Generates term frequency table comprising of term and term frequency tf.
+   * 
+   * @param n - ngram
+   */
   public void generateNGramTermFreqTable(int n) {
     try {
       System.out.println("Start: Generate Term Freq Table for " + n + " gram");
@@ -207,9 +242,15 @@ public class InvertedIndexer {
       e.printStackTrace();
     }
     System.out.println("Done: Generate Term Freq Table for " + n + " gram");
-
   }
 
+
+  /**
+   * Generates the document frequency table comprising of three columns: term, docIDs and df (document
+   * frequency). Also Sorts lexicographically based on term.
+   * 
+   * @param n - ngram
+   */
   public void generateNGramDocFreqTable(int n) {
     try {
       System.out.println("Start: Generate Doc Freq Table for " + n + " gram");
@@ -251,6 +292,9 @@ public class InvertedIndexer {
     System.out.println("Finish: Generate Doc Freq Table for " + n + " gram");
   }
 
+  /**
+   * Sorts the map based on the non-increasing order of its keys
+   */
   private HashMap<String, List<String>> sortMapByKeysDesc(
       HashMap<String, List<String>> map) {
     List<Map.Entry<String, List<String>>> list =
@@ -268,6 +312,9 @@ public class InvertedIndexer {
     return sortedHashMap;
   }
 
+  /**
+   * Sorts the map based on the increasing order of its values
+   */
   private static HashMap<String, Integer> sortMapByValues(HashMap<String, Integer> map) {
     List<Map.Entry<String, Integer>> list =
         new LinkedList<Map.Entry<String, Integer>>(map.entrySet());
@@ -284,134 +331,12 @@ public class InvertedIndexer {
   }
 
 
-  /* Based on the concepts discussed in the paper - 
-   * "Automatically Building a Stopword List for an Information Retrieval System"
-   * Uses Term Based Random Sampling Approach
-   * http://terrierteam.dcs.gla.ac.uk/publications/rtlo_DIRpaper.pdf */
-  //  public void generateStopListUsingTBRS(int n) {
-  //    int X = 200, Y = 1000, L = 400;
-  //
-  //    List<Map.Entry<String, Double>> stopWordsAndWeightsList =
-  //        new LinkedList<Map.Entry<String, Double>>();
-  //    List<String> termFreqs = new ArrayList<String>(termFreq.keySet());
-  //    for (int a = 0; a < Y; a++) {
-  //      // Randomly choose a term in the lexicon file
-  //      Random rand = new Random();
-  //      String wRand = termFreqs.get(rand.nextInt(termFreqs.size()));
-  //
-  //      // Retrieve all the documents in the corpus that contains wRand
-  //      Set<String> docIDs = invIndex.get(wRand).keySet();
-  //
-  //      // Use the refined Kullback-Leibler divergence measure to assign a weight
-  //      // to every term in the retrieved documents. The assigned weight will give
-  //      // us some indication of how important the term is.
-  //      HashMap<String, Double> weight = new HashMap<String, Double>();
-  //      int lx = 0; // sum of length of sampled document set
-  //
-  //      HashMap<String, Integer> sampledDocTermFreq = new HashMap<String, Integer>();
-  //      for (String docID : docIDs) {
-  //        File doc = new File(config.getParserOutputPath() + docID + ".txt");
-  //        String[] words = fUtility.textFileToString(doc).split(" ");
-  //        int termCount = words.length;
-  //        int windowingLimit = termCount - (n - 1);
-  //        lx += windowingLimit;
-  //        for (int i = 0; i < windowingLimit; i++) {
-  //          String term = new String();
-  //          term = words[i];
-  //          if (n > 1)
-  //            term = term + " " + words[i + 1];
-  //          if (n > 2)
-  //            term = term + " " + words[i + 2];
-  //          if (!term.isEmpty()) {
-  //            // if the term occurs for the first time
-  //            if (!sampledDocTermFreq.containsKey(term))
-  //              sampledDocTermFreq.put(term, 1);
-  //            else {
-  //              int prevFreq = sampledDocTermFreq.get(term);
-  //              sampledDocTermFreq.put(term, prevFreq + 1);
-  //            }
-  //          }
-  //        }
-  //      }
-  //
-  //      double maxWeight = -1;
-  //      for (Map.Entry<String, Integer> entry : sampledDocTermFreq.entrySet()) {
-  //        String term = entry.getKey();
-  //        int tfx = entry.getValue(); // freq of the term in sampled document set
-  //        int F = termFreq.get(term);// freq of the term in the whole collection
-  //        double Px = ((double) tfx / (double) lx);
-  //        double Pc = ((double) F / (double) collectionLength);
-  //        double weightT = Px * (Math.log(Px / Pc) / Math.log(2));
-  //        weight.put(term, weightT);
-  //        if (maxWeight < weightT)
-  //          maxWeight = weightT;
-  //      }
-  //
-  //      // Divide each term’s weight by the maximum weight of all terms. As
-  //      // a result, all the weights are controlled within [0,1]. In other words,
-  //      // Normalize each weighted term by the maximum weight. 
-  //      for (Map.Entry<String, Double> entry : weight.entrySet()) {
-  //        String term = entry.getKey();
-  //        double weightT = entry.getValue();
-  //        weight.put(term, weightT / maxWeight);
-  //      }
-  //
-  //      // Rank the weighted terms by their associated weight in ascending order.
-  //      // Since the less informative a term is, the less useful a term is and hence,
-  //      // the more likely it is a stopword.
-  //      List<Map.Entry<String, Double>> leastImportantTerms =
-  //          new LinkedList<Map.Entry<String, Double>>(weight.entrySet());
-  //      Collections.sort(leastImportantTerms, new MapComparatorByValues());
-  //
-  //      // Extract the top X top-ranked (i.e. least weighted)
-  //      if (leastImportantTerms.size() > X)
-  //        leastImportantTerms.subList(X, leastImportantTerms.size()).clear();
-  //
-  //      // Add to final list
-  //      stopWordsAndWeightsList.addAll(leastImportantTerms);
-  //      System.out.println(a);
-  //    }
-  //
-  //    // Combine terms in stopList
-  //    Collections.sort(stopWordsAndWeightsList, new MapComparatorByKeys());
-  //    Iterator<Entry<String, Double>> it = stopWordsAndWeightsList.iterator();
-  //    Entry<String, Double> prev = it.next();
-  //    double sum = prev.getValue();
-  //    int count = 1;
-  //    while (it.hasNext()) {
-  //      Entry<String, Double> curr = it.next();
-  //      if (curr.getKey().equals(prev.getKey())) {
-  //        sum += curr.getValue();
-  //        count++;
-  //        it.remove();
-  //      } else {
-  //        prev.setValue(sum / (double) count);
-  //        prev = curr;
-  //        sum = curr.getValue();
-  //        count = 1;
-  //      }
-  //    }
-  //
-  //    Collections.sort(stopWordsAndWeightsList, new MapComparatorByValues());
-  //    // Extract the top L top-ranked (i.e. least weighted)
-  //    if (stopWordsAndWeightsList.size() > L)
-  //      stopWordsAndWeightsList.subList(L, stopWordsAndWeightsList.size()).clear();
-  //
-  //    // Print stopwords to output
-  //    try {
-  //      PrintWriter stopWordsOut = new PrintWriter(config.getNGramStopListPathForTBRS(n));
-  //      for (Map.Entry<String, Double> stopWordAndWeight : stopWordsAndWeightsList) {
-  //        stopList.add(stopWordAndWeight.getKey());
-  //        fUtility.println(stopWordsOut, stopWordAndWeight.getKey());
-  //      }
-  //      stopWordsOut.close();
-  //    } catch (FileNotFoundException e) {
-  //      e.printStackTrace();
-  //    }
-  //  }
-
-
-
+  /**
+   * Generate Stop lists based on the tf-idf weights of each term
+   * 
+   * @param n - ngram
+   * @param limit - max limit on the cutoff
+   */
   public void generateStopListUsingTfidf(int n, int limit) {
     HashMap<String, Double> weights = new HashMap<String, Double>();
     Set<String> termSet = termFreq.keySet();

@@ -33,6 +33,7 @@ public class IndexerConfig {
   private int docsCount;
   private List<String> exclusionSelectors;
 
+
   IndexerConfig() {
     inputDocsPath = "./input/BFSCrawledDocuments.txt";
     outputFolderPath = "./output/";

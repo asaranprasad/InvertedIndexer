@@ -1,10 +1,16 @@
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Represents an index entry in the inverted index
+ * 
+ * @author asara
+ *
+ */
 public class IndexEntry {
-  private String docID;
-  private List<Integer> termPos;
-  private int tf;
+  private String docID; // id of the document
+  private List<Integer> termPos;// term position list
+  private int tf;// term frequency
 
   public IndexEntry(String docID) {
     this.docID = docID;

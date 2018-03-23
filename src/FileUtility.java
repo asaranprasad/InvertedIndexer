@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Scanner;
 
 public class FileUtility {
+  /**
+   * Returns the file contents as line delimeted String list
+   */
   public List<String> textFileToList(String filePath) {
     List<String> lines = new ArrayList<String>();
     try {
@@ -21,11 +24,23 @@ public class FileUtility {
   }
 
 
+  /**
+   * Returns contents of the text file
+   * 
+   * @param filePath - Path to file
+   * @return - String - file content
+   */
   public String textFileToString(String filePath) {
     return textFileToString(new File(filePath));
   }
 
 
+  /**
+   * Returns contents of the text file
+   * 
+   * @param file - File handle
+   * @return - String - file content
+   */
   public String textFileToString(File file) {
     StringBuilder lines = new StringBuilder();
     try {
@@ -39,6 +54,12 @@ public class FileUtility {
     return lines.toString();
   }
 
+  /**
+   * Parse and return next document from the cached document store
+   * 
+   * @param sc - io handle
+   * @return - String pair - 1. URL of the document 2. Document content
+   */
   public String[] getNextDocText(Scanner sc) {
     String[] titleDocStringPair = new String[2];
     try {
@@ -93,6 +114,12 @@ public class FileUtility {
     output.flush();
   }
 
+  /**
+   * Writes string into the file path specified
+   * 
+   * @param outputString
+   * @param outputPath
+   */
   public void writeStringToFile(String outputString, String outputPath) {
     try {
       PrintWriter outputHandle = new PrintWriter(outputPath);

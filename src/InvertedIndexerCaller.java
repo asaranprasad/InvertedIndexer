@@ -7,9 +7,8 @@ public class InvertedIndexerCaller {
       IndexerConfig ic = new IndexerConfig();
       CorpusGenerator cg = new CorpusGenerator();
 
-      //      // Task 1 - Parse Crawled Documents
-      //      cg.generateCorpus(true, true);
-      //
+      // Task 1 - Parse Crawled Documents
+      cg.generateCorpus(true, true);
 
       // Task 2b - Store the number of terms in each document
       // Task 2c - Generate inverted index for unigrams
@@ -57,11 +56,11 @@ public class InvertedIndexerCaller {
       invInd.generateNgramInvIndexFromCorpus(1, true);
 
 
-      //      // Test Loader with term positions
-      //      invInd = new InvertedIndexer();
-      //      // Load trigram inverted index from file
-      //      invInd.loadInvertedIndexFromFile(ic.getUnigramWithTermPosIndexPath());
-      //      invInd.printNGramIndexToFile(1, true);
+      // Load index from file with term positions
+      invInd = new InvertedIndexer();
+      // Load unigram inverted index from file
+      invInd.loadInvertedIndexFromFile(ic.getUnigramWithTermPosIndexPath());
+      invInd.printNGramIndexToFile(1, true);
     } catch (Exception e) {
       e.printStackTrace();
     }

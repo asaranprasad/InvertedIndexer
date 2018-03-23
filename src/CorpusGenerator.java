@@ -19,6 +19,12 @@ public class CorpusGenerator {
     this.config = config;
   }
 
+  /**
+   * Parses the downloaded document collection into queryable terms
+   * 
+   * @param doesCaseFolding - case folding enabled / disabled flag
+   * @param handlesPunctuations - punctuation handling enabled / disabled flag
+   */
   public void generateCorpus(boolean doesCaseFolding, boolean handlesPunctuations) {
     String outputFolderPath = config.getParserOutputPath();
     String inputDocsPath = config.getInputDocsPath();
@@ -36,21 +42,12 @@ public class CorpusGenerator {
 
         // save parsed document to output
         String outputFileName = outputFolderPath + articleTitle + ".txt";
-        if (fileExists(outputFileName)) {
-          System.out
-              .println("File Already Exists, overwriting it: " + articleTitle + ".txt");
-        }
         fUtility.writeStringToFile(docText, outputFileName);
       }
       sc.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-  }
-
-  private boolean fileExists(String outputFileName) {
-    File f = new File(outputFileName);
-    return f.exists() && !f.isDirectory();
   }
 
   /**
@@ -104,6 +101,9 @@ public class CorpusGenerator {
     return docText;
   }
 
+  /**
+   * Returns title of the article, parsed from the given URL
+   */
   private String getArticleTitle(String url) {
     return url.substring(url.lastIndexOf('/') + 1, url.length());
   }
