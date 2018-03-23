@@ -1,21 +1,37 @@
 # Inverted Indexer - Java Implementation
 
-Task1: 
-Task2: 
-Task3:
+Task1: Generating the corpus
+Task2: Implementing an inverted indexer and creating inverted indexes
+Task3: Corpus statistics
 
 ## Setting up
 
 The ./src/ folder consists of source code files
 ```
-1. *.java - ***
-
+1. InvertedIndexerCaller.java  - Contains tests performs the tasks for the indexer.
+2. InvertedIndexer.java        - Manages creation and maintenance of the inverted indexes and its associated datastructures.
+3. IndexerConfig.java          - Configuration of the indexer such as io paths, document parser exclusion lists etc.
+4. CorpusGenerator.java        - Consists of methods that parses the saved articles and creates the corpus for indexing. Employes regex and other configurable exclusion handling.
+5. IndexEntry.java             - Datastructure representing an entry in the inverted index.
+6. FileUtility.java            - Consists of File IO utility methods.
 ```
 
-The ./output/ folder consists of ***
-```
+The ./output/ folder consists of the hand in files
 
-```
+Task 1 - Generated corpus
+```parserOutput/``` - List of parsed documents from the downloaded article collection.
+
+
+Task 2 - Output files from index generation
+unigramOutput/unigramInvIndex.txt  - Task 2a - Inverted Index
+             /unigramDocLength.txt - Task 2b - Number of terms in each document
+bigramOutput/
+trigramOutput/
+unigramWithTermPosOutput/unigramInvIndexWithPos.txt - Task 2d - unigram index storing term positions.
+
+
+Task 3 - Output files from corpus statistics
+
 
 
 ## External Libraries Referenced
