@@ -54,9 +54,9 @@ public class IndexerConfig {
     unigramDocFreqPath = unigramOutputPath + "unigramDocFreq.txt";
     bigramDocFreqPath = bigramOutputPath + "bigramDocFreq.txt";
     trigramDocFreqPath = trigramOutputPath + "trigramDocFreq.txt";
-    unigramStopListPath = unigramOutputPath + "unigramStopList.txt";
-    bigramStopListPath = bigramOutputPath + "bigramStopList.txt";
-    trigramStopListPath = trigramOutputPath + "trigramStopList.txt";
+    unigramStopListPath = unigramOutputPath + "unigramStopListTfIdf.txt";
+    bigramStopListPath = bigramOutputPath + "bigramStopListTfIdf.txt";
+    trigramStopListPath = trigramOutputPath + "trigramStopListTfIdf.txt";
     unigramStopListPathTBRS = unigramOutputPath + "unigramStopListUsingTbrs.txt";
     bigramStopListPathTBRS = bigramOutputPath + "bigramStopListUsingTbrs.txt";
     trigramStopListPathTBRS = trigramOutputPath + "trigramStopListUsingTbrs.txt";
