@@ -10,9 +10,8 @@ public class InvertedIndexerCaller {
       //      // Task 1 - Parse Crawled Documents
       //      cg.generateCorpus(true, true);
       //
-      //      // Task 2b - Store the number of terms in each document
-      //      invInd.generateDocStatisticsFromCorpus();
 
+      // Task 2b - Store the number of terms in each document
       // Task 2c - Generate inverted index for unigrams
       invInd = new InvertedIndexer();
       invInd.generateNgramInvIndexFromCorpus(1, false);
@@ -20,8 +19,10 @@ public class InvertedIndexerCaller {
       invInd.generateNGramTermFreqTable(1);
       // Task 3 b - unigram
       invInd.generateNGramDocFreqTable(1);
-      // Task 3c - Generate Stoplists
-      invInd.generateStopList(1);
+      //      // Task 3c - Generate Stoplists using TBRS
+      //      invInd.generateStopListUsingTBRS(1);
+      // Task 3c - Generate Stoplists using tf-idf
+      invInd.generateStopListUsingTfidf(1, 500);
 
 
       // Task 2c - Generate inverted index for bigrams
@@ -31,8 +32,10 @@ public class InvertedIndexerCaller {
       invInd.generateNGramTermFreqTable(2);
       // Task 3 b - bigram
       invInd.generateNGramDocFreqTable(2);
-      // Task 3c - Generate Stoplists
-      invInd.generateStopList(2);
+      //      // Task 3c - Generate Stoplists using TBRS
+      //      invInd.generateStopListUsingTBRS(2);
+      // Task 3c - Generate Stoplists using tf-idf
+      invInd.generateStopListUsingTfidf(2, 500);
 
 
       // Task 2c - Generate inverted index for trigrams
@@ -42,8 +45,10 @@ public class InvertedIndexerCaller {
       invInd.generateNGramTermFreqTable(3);
       // Task 3 b - trigram
       invInd.generateNGramDocFreqTable(3);
-      // Task 3c - Generate Stoplists
-      invInd.generateStopList(3);
+      //      // Task 3c - Generate Stoplists using TBRS
+      //      invInd.generateStopListUsingTBRS(3);
+      // Task 3c - Generate Stoplists using tf-idf
+      invInd.generateStopListUsingTfidf(3, 500);
 
 
       // Task 2d - Generate another unigram index, this time,

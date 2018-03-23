@@ -23,7 +23,12 @@ public class IndexerConfig {
   private String unigramStopListPath;
   private String bigramStopListPath;
   private String trigramStopListPath;
-  private String docStatPath;
+  private String unigramStopListPathTBRS;
+  private String bigramStopListPathTBRS;
+  private String trigramStopListPathTBRS;
+  private String unigramDocStatPath;
+  private String bigramDocStatPath;
+  private String trigramDocStatPath;
 
   private int docsCount;
   private List<String> exclusionSelectors;
@@ -51,33 +56,14 @@ public class IndexerConfig {
     unigramStopListPath = unigramOutputPath + "unigramStopList.txt";
     bigramStopListPath = bigramOutputPath + "bigramStopList.txt";
     trigramStopListPath = trigramOutputPath + "trigramStopList.txt";
-    docStatPath = outputFolderPath + "docStat/stat.txt";
+    unigramStopListPathTBRS = unigramOutputPath + "unigramStopListUsingTbrs.txt";
+    bigramStopListPathTBRS = bigramOutputPath + "bigramStopListUsingTbrs.txt";
+    trigramStopListPathTBRS = trigramOutputPath + "trigramStopListUsingTbrs.txt";
+    unigramDocStatPath = unigramOutputPath + "unigramDocLength.txt";
+    bigramDocStatPath = bigramOutputPath + "bigramDocLength.txt";
+    trigramDocStatPath = trigramOutputPath + "trigramDocLength.txt";
     docsCount = 1000;
     setExclusionSelectors(getExclusionList());
-  }
-
-  public String getUnigramStopListPath() {
-    return unigramStopListPath;
-  }
-
-  public void setUnigramStopListPath(String unigramStopListPath) {
-    this.unigramStopListPath = unigramStopListPath;
-  }
-
-  public String getBigramStopListPath() {
-    return bigramStopListPath;
-  }
-
-  public void setBigramStopListPath(String bigramStopListPath) {
-    this.bigramStopListPath = bigramStopListPath;
-  }
-
-  public String getTrigramStopListPath() {
-    return trigramStopListPath;
-  }
-
-  public void setTrigramStopListPath(String trigramStopListPath) {
-    this.trigramStopListPath = trigramStopListPath;
   }
 
   /* List of exclusion elements to be ignored by the parser */
@@ -115,6 +101,55 @@ public class IndexerConfig {
     exclusionCSSList.add("div.hatnote.navigation-not-searchable");
     return exclusionCSSList;
   }
+
+  public String getUnigramStopListPathTBRS() {
+    return unigramStopListPathTBRS;
+  }
+
+  public void setUnigramStopListPathTBRS(String unigramStopListPathTBRS) {
+    this.unigramStopListPathTBRS = unigramStopListPathTBRS;
+  }
+
+  public String getBigramStopListPathTBRS() {
+    return bigramStopListPathTBRS;
+  }
+
+  public void setBigramStopListPathTBRS(String bigramStopListPathTBRS) {
+    this.bigramStopListPathTBRS = bigramStopListPathTBRS;
+  }
+
+  public String getTrigramStopListPathTBRS() {
+    return trigramStopListPathTBRS;
+  }
+
+  public void setTrigramStopListPathTBRS(String trigramStopListPathTBRS) {
+    this.trigramStopListPathTBRS = trigramStopListPathTBRS;
+  }
+
+  public String getUnigramStopListPath() {
+    return unigramStopListPath;
+  }
+
+  public void setUnigramStopListPath(String unigramStopListPath) {
+    this.unigramStopListPath = unigramStopListPath;
+  }
+
+  public String getBigramStopListPath() {
+    return bigramStopListPath;
+  }
+
+  public void setBigramStopListPath(String bigramStopListPath) {
+    this.bigramStopListPath = bigramStopListPath;
+  }
+
+  public String getTrigramStopListPath() {
+    return trigramStopListPath;
+  }
+
+  public void setTrigramStopListPath(String trigramStopListPath) {
+    this.trigramStopListPath = trigramStopListPath;
+  }
+
 
   public String getUnigramWithTermPosIndexPath() {
     return unigramWithTermPosIndexPath;
@@ -244,20 +279,36 @@ public class IndexerConfig {
     this.unigramWithTermPosOutputPath = unigramWithTermPosOutputPath;
   }
 
-  public String getDocStatPath() {
-    return docStatPath;
-  }
-
-  public void setDocStatPath(String docStatPath) {
-    this.docStatPath = docStatPath;
-  }
-
   public List<String> getExclusionSelectors() {
     return exclusionSelectors;
   }
 
   public void setExclusionSelectors(List<String> exclusionSelectors) {
     this.exclusionSelectors = exclusionSelectors;
+  }
+
+  public String getUnigramDocStatPath() {
+    return unigramDocStatPath;
+  }
+
+  public void setUnigramDocStatPath(String unigramDocStatPath) {
+    this.unigramDocStatPath = unigramDocStatPath;
+  }
+
+  public String getBigramDocStatPath() {
+    return bigramDocStatPath;
+  }
+
+  public void setBigramDocStatPath(String bigramDocStatPath) {
+    this.bigramDocStatPath = bigramDocStatPath;
+  }
+
+  public String getTrigramDocStatPath() {
+    return trigramDocStatPath;
+  }
+
+  public void setTrigramDocStatPath(String trigramDocStatPath) {
+    this.trigramDocStatPath = trigramDocStatPath;
   }
 
   public String getNGramIndexPath(int n, boolean storeTermPos) {
@@ -318,6 +369,30 @@ public class IndexerConfig {
         return getBigramTermFreqPath();
       case 3:
         return getTrigramTermFreqPath();
+    }
+    return null;
+  }
+
+  public String getNGramStopListPathForTBRS(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramStopListPathTBRS();
+      case 2:
+        return getBigramStopListPathTBRS();
+      case 3:
+        return getTrigramStopListPathTBRS();
+    }
+    return null;
+  }
+
+  public String getDocStatPath(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramDocStatPath();
+      case 2:
+        return getBigramDocStatPath();
+      case 3:
+        return getTrigramDocStatPath();
     }
     return null;
   }
