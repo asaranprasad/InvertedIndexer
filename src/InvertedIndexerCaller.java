@@ -45,6 +45,11 @@ public class InvertedIndexerCaller {
       invInd = new InvertedIndexer();
       invInd.generateNgramInvIndexFromCorpus(1, true);
 
+      // Task 3c - Generate Stoplists
+      invInd.generateStopList(1);
+      invInd.generateStopList(2);
+      invInd.generateStopList(3);
+
 
       //      // Test Loader with term positions
       //      invInd = new InvertedIndexer();

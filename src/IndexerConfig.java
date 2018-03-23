@@ -20,6 +20,9 @@ public class IndexerConfig {
   private String unigramDocFreqPath;
   private String bigramDocFreqPath;
   private String trigramDocFreqPath;
+  private String unigramStopListPath;
+  private String bigramStopListPath;
+  private String trigramStopListPath;
   private String docStatPath;
 
   private int docsCount;
@@ -45,9 +48,36 @@ public class IndexerConfig {
     unigramDocFreqPath = unigramOutputPath + "unigramDocFreq.txt";
     bigramDocFreqPath = bigramOutputPath + "bigramDocFreq.txt";
     trigramDocFreqPath = trigramOutputPath + "trigramDocFreq.txt";
+    unigramStopListPath = unigramOutputPath + "unigramStopList.txt";
+    bigramStopListPath = bigramOutputPath + "bigramStopList.txt";
+    trigramStopListPath = trigramOutputPath + "trigramStopList.txt";
     docStatPath = outputFolderPath + "docStat/stat.txt";
     docsCount = 1000;
     setExclusionSelectors(getExclusionList());
+  }
+
+  public String getUnigramStopListPath() {
+    return unigramStopListPath;
+  }
+
+  public void setUnigramStopListPath(String unigramStopListPath) {
+    this.unigramStopListPath = unigramStopListPath;
+  }
+
+  public String getBigramStopListPath() {
+    return bigramStopListPath;
+  }
+
+  public void setBigramStopListPath(String bigramStopListPath) {
+    this.bigramStopListPath = bigramStopListPath;
+  }
+
+  public String getTrigramStopListPath() {
+    return trigramStopListPath;
+  }
+
+  public void setTrigramStopListPath(String trigramStopListPath) {
+    this.trigramStopListPath = trigramStopListPath;
   }
 
   /* List of exclusion elements to be ignored by the parser */
@@ -56,6 +86,7 @@ public class IndexerConfig {
     exclusionCSSList.add("[role=navigation]");
     exclusionCSSList.add("[class='external text']");
     exclusionCSSList.add("[class*='navigation']");
+    exclusionCSSList.add(".reference");
     exclusionCSSList.add("div#jump-to-nav");
     exclusionCSSList.add(".internal");
     exclusionCSSList.add(".image");
@@ -267,4 +298,27 @@ public class IndexerConfig {
     return null;
   }
 
+  public String getNGramStopListPath(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramStopListPath();
+      case 2:
+        return getBigramStopListPath();
+      case 3:
+        return getTrigramStopListPath();
+    }
+    return null;
+  }
+
+  public String getTermFreqPath(int n) {
+    switch (n) {
+      case 1:
+        return getUnigramTermFreqPath();
+      case 2:
+        return getBigramTermFreqPath();
+      case 3:
+        return getTrigramTermFreqPath();
+    }
+    return null;
+  }
 }

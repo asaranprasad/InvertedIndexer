@@ -4,17 +4,23 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 public class InvertedIndexer {
   private HashMap<String, Integer> docLength;
   private HashMap<String, HashMap<String, IndexEntry>> invIndex;
   private HashMap<String, Integer> termFreq;
   private HashMap<String, List<String>> docFreq;
+  private List<String> stopList;
+  private int collectionLength;
   IndexerConfig config;
   private FileUtility fUtility;
   private File parsedDocumentsDir;
@@ -30,6 +36,8 @@ public class InvertedIndexer {
     invIndex = new HashMap<String, HashMap<String, IndexEntry>>();
     termFreq = new HashMap<String, Integer>();
     docFreq = new HashMap<String, List<String>>();
+    stopList = new LinkedList<String>();
+    collectionLength = 0;
     this.config = config;
     fUtility = new FileUtility();
     parsedDocumentsDir = new File(config.getParserOutputPath());
@@ -100,11 +108,13 @@ public class InvertedIndexer {
     invIndex = new HashMap<String, HashMap<String, IndexEntry>>();
     File[] directoryListing = parsedDocumentsDir.listFiles();
     int fileCount = 0;
+    collectionLength = 0;
     if (directoryListing != null)
       for (File doc : directoryListing) {
         String[] words = fUtility.textFileToString(doc).split(" ");
         String docID = trimFileExtn(doc.getName());
         int windowingLimit = words.length - (n - 1);
+        collectionLength += windowingLimit;
         for (int i = 0; i < windowingLimit; i++) {
           String term = new String();
           term = words[i];
@@ -281,5 +291,145 @@ public class InvertedIndexer {
     for (Map.Entry<String, Integer> entry : list)
       sortedHashMap.put(entry.getKey(), entry.getValue());
     return sortedHashMap;
+  }
+
+
+  /* Based on the concepts discussed in the paper - 
+   * "Automatically Building a Stopword List for an Information Retrieval System"
+   * http://terrierteam.dcs.gla.ac.uk/publications/rtlo_DIRpaper.pdf */
+  public void generateStopList(int n) {
+    int X = 200, Y = 1000, L = 400;
+
+    List<Map.Entry<String, Double>> stopWordsAndWeightsList =
+        new LinkedList<Map.Entry<String, Double>>();
+    for (int a = 0; a < Y; a++) {
+      // Randomly choose a term in the lexicon file
+      List<String> termFreqs = fUtility.textFileToList(config.getTermFreqPath(n));
+      Random rand = new Random();
+      String wRand = termFreqs.get(rand.nextInt(termFreqs.size())).split(" ")[0];
+
+      // Retrieve all the documents in the corpus that contains wRand
+      Set<String> docIDs = invIndex.get(wRand).keySet();
+
+      // Use the refined Kullback-Leibler divergence measure to assign a weight
+      // to every term in the retrieved documents. The assigned weight will give
+      // us some indication of how important the term is.
+      HashMap<String, Double> weight = new HashMap<String, Double>();
+      int lx = 0; // sum of length of sampled document set
+
+      HashMap<String, Integer> sampledDocTermFreq = new HashMap<String, Integer>();
+      for (String docID : docIDs) {
+        File doc = new File(config.getParserOutputPath() + docID + ".txt");
+        String[] words = fUtility.textFileToString(doc).split(" ");
+        int termCount = words.length;
+        int windowingLimit = termCount - (n - 1);
+        lx += windowingLimit;
+        for (int i = 0; i < windowingLimit; i++) {
+          String term = new String();
+          term = words[i];
+          if (n > 1)
+            term = term + " " + words[i + 1];
+          if (n > 2)
+            term = term + " " + words[i + 2];
+          if (!term.isEmpty()) {
+            // if the term occurs for the first time
+            if (!sampledDocTermFreq.containsKey(term))
+              sampledDocTermFreq.put(term, 1);
+            else {
+              int prevFreq = sampledDocTermFreq.get(term);
+              sampledDocTermFreq.put(term, prevFreq + 1);
+            }
+          }
+        }
+      }
+
+      double maxWeight = -1;
+      for (Map.Entry<String, Integer> entry : sampledDocTermFreq.entrySet()) {
+        String term = entry.getKey();
+        int tfx = entry.getValue(); // freq of the term in sampled document set
+        int F = termFreq.get(term);// freq of the term in the whole collection
+        double Px = ((double) tfx / (double) lx);
+        double Pc = ((double) F / (double) collectionLength);
+        double weightT = Px * (Math.log(Px / Pc) / Math.log(2));
+        weight.put(term, weightT);
+        if (maxWeight < weightT)
+          maxWeight = weightT;
+      }
+
+      // Divide each term’s weight by the maximum weight of all terms. As
+      // a result, all the weights are controlled within [0,1]. In other words,
+      // Normalize each weighted term by the maximum weight. 
+      for (Map.Entry<String, Double> entry : weight.entrySet()) {
+        String term = entry.getKey();
+        double weightT = entry.getValue();
+        weight.put(term, weightT / maxWeight);
+      }
+
+      // Rank the weighted terms by their associated weight in ascending order.
+      // Since the less informative a term is, the less useful a term is and hence,
+      // the more likely it is a stopword.
+      List<Map.Entry<String, Double>> leastImportantTerms =
+          new LinkedList<Map.Entry<String, Double>>(weight.entrySet());
+      Collections.sort(leastImportantTerms, new MapComparatorByValues());
+
+      // Extract the top X top-ranked (i.e. least weighted)
+      leastImportantTerms.subList(X, leastImportantTerms.size()).clear();
+
+      // Add to final list
+      stopWordsAndWeightsList.addAll(leastImportantTerms);
+    }
+
+    // Combine terms in stopList
+    Collections.sort(stopWordsAndWeightsList, new MapComparatorByKeys());
+    Iterator<Entry<String, Double>> it = stopWordsAndWeightsList.iterator();
+    Entry<String, Double> prev = it.next();
+    double sum = prev.getValue();
+    int count = 1;
+    while (it.hasNext()) {
+      Entry<String, Double> curr = it.next();
+      if (curr.getKey().equals(prev.getKey())) {
+        sum += curr.getValue();
+        count++;
+        it.remove();
+      } else {
+        prev.setValue(sum / (double) count);
+        prev = curr;
+        sum = curr.getValue();
+        count = 1;
+      }
+    }
+
+    Collections.sort(stopWordsAndWeightsList, new MapComparatorByValues());
+    // Extract the top L top-ranked (i.e. least weighted)
+    stopWordsAndWeightsList.subList(L, stopWordsAndWeightsList.size()).clear();
+
+    // Print stopwords to output
+    try {
+      PrintWriter stopWordsOut = new PrintWriter(config.getNGramStopListPath(n));
+      for (Map.Entry<String, Double> stopWordAndWeight : stopWordsAndWeightsList) {
+        stopList.add(stopWordAndWeight.getKey());
+        fUtility.println(stopWordsOut, stopWordAndWeight.getKey());
+      }
+      stopWordsOut.close();
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+}
+
+
+class MapComparatorByValues implements Comparator<Map.Entry<String, Double>> {
+  @Override
+  public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+    return (o1.getValue()).compareTo(o2.getValue());
+  }
+}
+
+
+class MapComparatorByKeys implements Comparator<Map.Entry<String, Double>> {
+  @Override
+  public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+    return (o1.getKey()).compareTo(o2.getKey());
   }
 }
