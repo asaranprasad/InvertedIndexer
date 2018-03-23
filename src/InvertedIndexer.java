@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -302,11 +303,11 @@ public class InvertedIndexer {
 
     List<Map.Entry<String, Double>> stopWordsAndWeightsList =
         new LinkedList<Map.Entry<String, Double>>();
+    List<String> termFreqs = new ArrayList<String>(termFreq.keySet());
     for (int a = 0; a < Y; a++) {
       // Randomly choose a term in the lexicon file
-      List<String> termFreqs = fUtility.textFileToList(config.getTermFreqPath(n));
       Random rand = new Random();
-      String wRand = termFreqs.get(rand.nextInt(termFreqs.size())).split(" ")[0];
+      String wRand = termFreqs.get(rand.nextInt(termFreqs.size()));
 
       // Retrieve all the documents in the corpus that contains wRand
       Set<String> docIDs = invIndex.get(wRand).keySet();
@@ -373,10 +374,12 @@ public class InvertedIndexer {
       Collections.sort(leastImportantTerms, new MapComparatorByValues());
 
       // Extract the top X top-ranked (i.e. least weighted)
-      leastImportantTerms.subList(X, leastImportantTerms.size()).clear();
+      if (leastImportantTerms.size() > X)
+        leastImportantTerms.subList(X, leastImportantTerms.size()).clear();
 
       // Add to final list
       stopWordsAndWeightsList.addAll(leastImportantTerms);
+      System.out.println(a);
     }
 
     // Combine terms in stopList
@@ -401,7 +404,8 @@ public class InvertedIndexer {
 
     Collections.sort(stopWordsAndWeightsList, new MapComparatorByValues());
     // Extract the top L top-ranked (i.e. least weighted)
-    stopWordsAndWeightsList.subList(L, stopWordsAndWeightsList.size()).clear();
+    if (stopWordsAndWeightsList.size() > L)
+      stopWordsAndWeightsList.subList(L, stopWordsAndWeightsList.size()).clear();
 
     // Print stopwords to output
     try {
