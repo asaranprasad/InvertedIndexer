@@ -58,7 +58,8 @@ Created stop lists using 2 approaches
 Approach 1. Manual analysis of the term frequencies of the ngrams
 Approach 2. Attempt to auto-generate stop lists using tf-idf weight computation and choosing top 500 terms. 
 
-Inference: Approach 2 helped auto creating the stop list, but did not yield an efficient outcome. Few of the common words got ignored in the list. The tf-idf weighing takes into consideration the importance of a term in the document(through its frequency), but does not take into consideration the relevance of the term in the corpus.
+Inference: Approach 2 helped auto creating the stop list, but did not yield an efficient outcome. Few of the common words got ignored in the list. 
+The tf-idf weighing takes into consideration the importance of a term in the document(through its frequency), but does not take into consideration the relevance of the term in the corpus.
 
 Approach1 - Cutoff choices made:
 1 Unigram Stop Lists
