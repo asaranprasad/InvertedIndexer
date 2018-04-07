@@ -50,6 +50,31 @@ public class CorpusGenerator {
     }
   }
 
+
+  /**
+   * Parses the downloaded document collection into separate raw html documents
+   */
+  public void dissolveCorpus() {
+    String outputFolderPath = config.getParserOutputPath();
+    String inputDocsPath = config.getInputDocsPath();
+    String[] titleDocStringPair = new String[2];
+
+    try {
+      Scanner sc = new Scanner(new File(inputDocsPath));
+      for (int i = 0; i < config.getDocsCount(); i++) {
+        titleDocStringPair = fUtility.getNextDocText(sc);
+        String articleTitle = getArticleTitle(titleDocStringPair[0]);
+
+        // save parsed document to output
+        String outputFileName = outputFolderPath + "raw/" + articleTitle + ".txt";
+        fUtility.writeStringToFile(titleDocStringPair[1], outputFileName);
+      }
+      sc.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * Extract plain textual content of the article. Ignore/remove ALL markup notation (HTML tags),
    * URLs, references to images, tables, formulas, and navigational components.

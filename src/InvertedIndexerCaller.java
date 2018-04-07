@@ -7,6 +7,9 @@ public class InvertedIndexerCaller {
       IndexerConfig ic = new IndexerConfig();
       CorpusGenerator cg = new CorpusGenerator();
 
+      // dissolve larger corpus into smaller page-wise chunks
+      cg.dissolveCorpus();
+
       // Task 1 - Parse Crawled Documents
       cg.generateCorpus(true, true);
 
